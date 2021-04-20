@@ -13,7 +13,7 @@ export class UsersResolver {
    * @param id
    * @returns single user, or throw not found exception
    */
-  @Query((returns) => User, { nullable: true, name: "user" })
+  @Query((returns) => User, { nullable: true, name: 'user' })
   async user(@Args('id') id: string): Promise<User> {
     let user: User = await this.usersService.findOneById(id);
     if (!user) new NotFoundException(id);
@@ -24,7 +24,7 @@ export class UsersResolver {
    * Get all Users
    * @returns array of User
    */
-  @Query((returns) => [User], { nullable: true, name: "users" })
+  @Query((returns) => [User], { nullable: true, name: 'users' })
   async users(): Promise<User[]> {
     return await this.usersService.findAll();
   }
@@ -34,7 +34,7 @@ export class UsersResolver {
    * @param newUserData
    * @returns newly saved user or throw exception
    */
-  @Mutation((returns) => User,{ name: "createUser"})
+  @Mutation((returns) => User, { name: 'createUser' })
   async createUser(
     @Args('newUserData') newUserData: NewUserInput,
   ): Promise<User> {

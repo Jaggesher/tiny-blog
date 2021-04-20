@@ -29,6 +29,11 @@ export class PostsService {
     return this.myPosts;
   }
 
+  /**s
+   * Create new post
+   * @param data
+   * @returns newly created post
+   */
   async create(data: NewPostInput): Promise<Post> {
     if (!(await this.usersService.CheckUserById(data.userId))) return null;
 
@@ -41,5 +46,15 @@ export class PostsService {
 
     this.myPosts.push(post);
     return post;
+  }
+
+  /**
+   * Check weather post id is valid or not
+   * @param id
+   * @returns true of false
+   */
+  async CheckPostById(id: string) {
+    let tm = this.myPosts.find((x) => x.id === id);
+    return tm ? true : false;
   }
 }
