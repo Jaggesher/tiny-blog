@@ -16,7 +16,7 @@ export class UsersService {
    */
   async findOneById(id: string): Promise<User> {
     let user = this.myUsers.find((x) => x.id === id);
-    if(!user) throw new NotFoundException(id);
+    if (!user) throw new NotFoundException(id);
     return user;
   }
 
@@ -28,6 +28,11 @@ export class UsersService {
     return this.myUsers;
   }
 
+  /**
+   * Add new user.
+   * @param newUser
+   * @returns newly created user
+   */
   async create(newUser: NewUserInput): Promise<User> {
     let tm = new User();
     tm.id = uuidv4();
@@ -36,5 +41,15 @@ export class UsersService {
     tm.creationDate = new Date();
     this.myUsers.push(tm);
     return tm;
+  }
+
+  /**
+   * Check weather user exists or not by Id.
+   * @param id 
+   * @returns true of false  
+   */
+  async CheckUserById(id: string): Promise<boolean> {
+    let tm = this.myUsers.find((x) => x.id === id);
+    return tm ? true : false;
   }
 }
