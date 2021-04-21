@@ -5,21 +5,25 @@ import {
   Args,
   Parent,
   ResolveField,
+  Subscription,
 } from '@nestjs/graphql';
 import { Comment } from './models/comment.model';
 import { NewCommentInput } from './dtos/new-comment.input';
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { Post } from 'src/posts/models/post.model';
 import { User } from 'src/users/models/user.model';
 import { PostsService } from 'src/posts/posts.service';
 import { UsersService } from 'src/users/users.service';
 import { CommentsService } from './comments.service';
+import { PubSub } from 'apollo-server-express';
+
 @Resolver((of) => Comment)
 export class CommentsResolver {
   constructor(
     private readonly commentsService: CommentsService,
     private readonly postService: PostsService,
     private readonly userService: UsersService,
+    @Inject('PUB_SUB') private readonly pubSub: PubSub,
   ) {}
 
   /**
@@ -64,6 +68,20 @@ export class CommentsResolver {
   }
 
   /**
+   * Get subscribe for new comments..
+   * @param postId
+   * @returns
+   */
+  @Subscription((returns) => Comment, {
+    name: 'commentAdded',
+    filter: (payload, variables) =>
+      payload.commentAdded.postId === variables.postId,
+  })
+  async CommentAdded(@Args('postId') postId: string) {
+    return this.pubSub.asyncIterator('commentAdded');
+  }
+
+  /**
    * Create new comment of a post
    * @param newCommentInput
    * @returns newly created Input
@@ -74,6 +92,9 @@ export class CommentsResolver {
   ): Promise<Comment> {
     let tm = await this.commentsService.NewComment(newCommentInput);
     if (!tm) throw new NotFoundException('Invalid, post or user id');
+
+    this.pubSub.publish('commentAdded', { commentAdded: tm }); //Notify the users
+
     return tm;
   }
 }

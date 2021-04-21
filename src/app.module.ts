@@ -15,6 +15,10 @@ import { UsersModule } from './users/users.module';
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
+      installSubscriptionHandlers: true,
+      subscriptions: {
+        keepAlive: 5000,
+      },
     }),
   ],
   controllers: [AppController],
