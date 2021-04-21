@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PostsService } from 'src/Posts/posts.service';
+import { PostsService } from 'src/posts/posts.service';
 import { UsersService } from 'src/users/users.service';
 import { NewCommentInput } from './dtos/new-comment.input';
 import { Comment } from './models/comment.model';

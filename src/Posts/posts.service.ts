@@ -26,7 +26,7 @@ export class PostsService {
    * @returns
    */
   async getAll(): Promise<Post[]> {
-    return this.myPosts;
+    return [...this.myPosts];
   }
 
   /**s

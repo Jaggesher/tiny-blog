@@ -25,7 +25,7 @@ export class UsersService {
    * @returns Users Array
    */
   async findAll(): Promise<User[]> {
-    return this.myUsers;
+    return [...this.myUsers];
   }
 
   /**

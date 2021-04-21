@@ -9,9 +9,9 @@ import {
 import { Comment } from './models/comment.model';
 import { NewCommentInput } from './dtos/new-comment.input';
 import { NotFoundException } from '@nestjs/common';
-import { Post } from 'src/Posts/models/post.model';
+import { Post } from 'src/posts/models/post.model';
 import { User } from 'src/users/models/user.model';
-import { PostsService } from 'src/Posts/posts.service';
+import { PostsService } from 'src/posts/posts.service';
 import { UsersService } from 'src/users/users.service';
 import { CommentsService } from './comments.service';
 @Resolver((of) => Comment)
