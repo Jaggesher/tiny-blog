@@ -63,6 +63,7 @@ export class CommentsResolver {
    * @param comment
    * @returns user object
    */
+  @ResolveField()
   async user(@Parent() comment: Comment): Promise<User> {
     return this.userService.findOneById(comment.userId);
   }
