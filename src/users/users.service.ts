@@ -2,22 +2,33 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { NewUserInput } from './dtos/new-user.input';
 import { User } from './models/user.model';
 import { v4 as uuidv4 } from 'uuid';
+import { SqliteService } from 'src/database/sqlite/sqlite.service';
+import { HelperService } from 'src/helper/helper.service';
 
 @Injectable()
 export class UsersService {
-  private myUsers: User[];
-  constructor() {
-    this.myUsers = [];
-  }
+  constructor(
+    private readonly sqliteService: SqliteService,
+    private readonly helperService: HelperService,
+  ) {}
   /**
    * Get One user by ID.
    * @param id
    * @returns User
    */
   async findOneById(id: string): Promise<User> {
-    let user = this.myUsers.find((x) => x.id === id);
-    if (!user) throw new NotFoundException(id);
-    return user;
+    try {
+      let user = <User>await this.sqliteService.get(
+        `SELECT * FROM User WHERE id = $id`,
+        {
+          $id: id,
+        },
+      );
+      if (!user) throw new NotFoundException(id);
+      return user;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**
@@ -25,7 +36,12 @@ export class UsersService {
    * @returns Users Array
    */
   async findAll(): Promise<User[]> {
-    return [...this.myUsers];
+    try {
+      let tm = <User[]>await this.sqliteService.all('SELECT * FROM User');
+      return tm;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**
@@ -39,17 +55,35 @@ export class UsersService {
     tm.name = newUser.name;
     tm.email = newUser.email;
     tm.creationDate = new Date();
-    this.myUsers.push(tm);
-    return tm;
+    
+    try {
+      let flag = await this.sqliteService.run(
+        `INSERT INTO User (id, email, name, creationDate) VALUES($id, $email, $name, $creationDate)`,
+        this.helperService.objTo$obj(tm),
+      );
+      if (flag) return tm;
+      throw new Error('Something went wrong!');
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**
    * Check weather user exists or not by Id.
-   * @param id 
-   * @returns true of false  
+   * @param id
+   * @returns true of false
    */
   async CheckUserById(id: string): Promise<boolean> {
-    let tm = this.myUsers.find((x) => x.id === id);
-    return tm ? true : false;
+    try {
+      let tm = <User>await this.sqliteService.get(
+        `SELECT * FROM User WHERE id = $id`,
+        {
+          $id: id,
+        },
+      );
+      return tm ? true : false;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 }

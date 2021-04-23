@@ -4,17 +4,18 @@ import { UsersService } from 'src/users/users.service';
 import { NewCommentInput } from './dtos/new-comment.input';
 import { Comment } from './models/comment.model';
 import { v4 as uuidv4 } from 'uuid';
+import { SqliteService } from 'src/database/sqlite/sqlite.service';
+import { HelperService } from 'src/helper/helper.service';
+import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class CommentsService {
-  private myComments: Comment[];
-
   constructor(
     private readonly postService: PostsService,
     private readonly userService: UsersService,
-  ) {
-    this.myComments = [];
-  }
+    private readonly sqliteService: SqliteService,
+    private readonly helperService: HelperService,
+  ) {}
 
   /**
    * Retrieve comments of a post
@@ -22,9 +23,16 @@ export class CommentsService {
    * @returns array of Comments
    */
   async GetAllCommentsByPostId(id: string): Promise<Comment[]> {
-    return this.myComments.filter((x) => {
-      return x.postId === id;
-    });
+    try {
+      return <Comment[]>await this.sqliteService.all(
+        `SELECT * from Comment WHERE postId = $id`,
+        {
+          $id: id,
+        },
+      );
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**
@@ -33,13 +41,24 @@ export class CommentsService {
    * @returns Comment object
    */
   async GetComment(id: string): Promise<Comment> {
-    return this.myComments.find((x) => x.id === id);
+    try {
+      let comment = <Comment>await this.sqliteService.get(
+        `SELECT * FROM Comment WHERE id = $id`,
+        {
+          $id: id,
+        },
+      );
+      if (!comment) throw new NotFoundException(id);
+      return comment;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**
    * Create new Comment
-   * @param data 
-   * @returns newly created comment 
+   * @param data
+   * @returns newly created comment
    */
   async NewComment(data: NewCommentInput): Promise<Comment> {
     if (!(await this.userService.CheckUserById(data.userId))) return null;
@@ -52,8 +71,17 @@ export class CommentsService {
     tm.userId = data.userId;
     tm.creationDate = new Date();
 
-    this.myComments.push(tm);
+    console.log(this.helperService.objTo$obj(tm));
 
-    return tm;
+    try {
+      let flag = await this.sqliteService.run(
+        `INSERT INTO Comment (id, text, creationDate, postId, userId) VALUES($id, $text, $creationDate, $postId, $userId)`,
+        this.helperService.objTo$obj(tm),
+      );
+      if (flag) return tm;
+      throw new Error('Something went wrong!');
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 }
