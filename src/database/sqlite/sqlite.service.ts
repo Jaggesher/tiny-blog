@@ -90,7 +90,7 @@ export class SqliteService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    console.log('On module init called');
+    //console.log('On module init called');
     try {
       console.log(await this.open('src/tiny-blog.db'));
     } catch (Error) {
@@ -99,7 +99,7 @@ export class SqliteService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    console.log('On module destroy called');
+    //console.log('On module destroy called');
     try {
       this.close();
     } catch (Error) {

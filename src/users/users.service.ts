@@ -4,7 +4,7 @@ import { User } from './models/user.model';
 import { v4 as uuidv4 } from 'uuid';
 import { SqliteService } from 'src/database/sqlite/sqlite.service';
 import { HelperService } from 'src/helper/helper.service';
-
+import { insert, select, selectById } from './users.query';
 @Injectable()
 export class UsersService {
   constructor(
@@ -18,12 +18,9 @@ export class UsersService {
    */
   async findOneById(id: string): Promise<User> {
     try {
-      let user = <User>await this.sqliteService.get(
-        `SELECT * FROM User WHERE id = $id`,
-        {
-          $id: id,
-        },
-      );
+      let user = <User>await this.sqliteService.get(selectById, {
+        $id: id,
+      });
       if (!user) throw new NotFoundException(id);
       return user;
     } catch (err) {
@@ -37,7 +34,7 @@ export class UsersService {
    */
   async findAll(): Promise<User[]> {
     try {
-      let tm = <User[]>await this.sqliteService.all('SELECT * FROM User');
+      let tm = <User[]>await this.sqliteService.all(select);
       return tm;
     } catch (err) {
       throw new Error(err);
@@ -55,10 +52,10 @@ export class UsersService {
     tm.name = newUser.name;
     tm.email = newUser.email;
     tm.creationDate = new Date();
-    
+
     try {
       let flag = await this.sqliteService.run(
-        `INSERT INTO User (id, email, name, creationDate) VALUES($id, $email, $name, $creationDate)`,
+        insert,
         this.helperService.objTo$obj(tm),
       );
       if (flag) return tm;
@@ -75,12 +72,9 @@ export class UsersService {
    */
   async CheckUserById(id: string): Promise<boolean> {
     try {
-      let tm = <User>await this.sqliteService.get(
-        `SELECT * FROM User WHERE id = $id`,
-        {
-          $id: id,
-        },
-      );
+      let tm = <User>await this.sqliteService.get(selectById, {
+        $id: id,
+      });
       return tm ? true : false;
     } catch (err) {
       throw new Error(err);

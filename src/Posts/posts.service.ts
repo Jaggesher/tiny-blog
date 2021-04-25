@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { UsersService } from 'src/users/users.service';
 import { SqliteService } from 'src/database/sqlite/sqlite.service';
 import { HelperService } from 'src/helper/helper.service';
+import { insert, select, selectById } from './posts.query';
 
 @Injectable()
 export class PostsService {
@@ -21,12 +22,9 @@ export class PostsService {
    */
   async findOneById(id: string): Promise<Post> {
     try {
-      let post = <Post>await this.sqliteService.get(
-        `SELECT * FROM Post WHERE id = $id`,
-        {
-          $id: id,
-        },
-      );
+      let post = <Post>await this.sqliteService.get(selectById, {
+        $id: id,
+      });
       if (!post) throw new NotFoundException(id);
       return post;
     } catch (err) {
@@ -40,7 +38,7 @@ export class PostsService {
    */
   async getAll(): Promise<Post[]> {
     try {
-      let tm = <Post[]>await this.sqliteService.all('SELECT * FROM Post');
+      let tm = <Post[]>await this.sqliteService.all(select);
       return tm;
     } catch (err) {
       throw new Error(err);
@@ -61,10 +59,10 @@ export class PostsService {
     post.description = data.description;
     post.userId = data.userId;
     post.creationDate = new Date();
-    
+
     try {
       let flag = await this.sqliteService.run(
-        `INSERT INTO Post (id, title, description, userId, creationDate) VALUES($id, $title, $description, $userId, $creationDate)`,
+        insert,
         this.helperService.objTo$obj(post),
       );
       if (flag) return post;
@@ -81,12 +79,9 @@ export class PostsService {
    */
   async CheckPostById(id: string) {
     try {
-      let tm = <Post>await this.sqliteService.get(
-        `SELECT * FROM Post WHERE id = $id`,
-        {
-          $id: id,
-        },
-      );
+      let tm = <Post>await this.sqliteService.get(selectById, {
+        $id: id,
+      });
       return tm ? true : false;
     } catch (err) {
       throw new Error(err);

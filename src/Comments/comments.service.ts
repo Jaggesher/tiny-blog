@@ -8,6 +8,8 @@ import { SqliteService } from 'src/database/sqlite/sqlite.service';
 import { HelperService } from 'src/helper/helper.service';
 import { NotFoundException } from '@nestjs/common';
 
+import { insert, selectById, selectByPostId } from './comments.query';
+
 @Injectable()
 export class CommentsService {
   constructor(
@@ -24,12 +26,9 @@ export class CommentsService {
    */
   async GetAllCommentsByPostId(id: string): Promise<Comment[]> {
     try {
-      return <Comment[]>await this.sqliteService.all(
-        `SELECT * from Comment WHERE postId = $id`,
-        {
-          $id: id,
-        },
-      );
+      return <Comment[]>await this.sqliteService.all(selectByPostId, {
+        $id: id,
+      });
     } catch (err) {
       throw new Error(err);
     }
@@ -42,12 +41,9 @@ export class CommentsService {
    */
   async GetComment(id: string): Promise<Comment> {
     try {
-      let comment = <Comment>await this.sqliteService.get(
-        `SELECT * FROM Comment WHERE id = $id`,
-        {
-          $id: id,
-        },
-      );
+      let comment = <Comment>await this.sqliteService.get(selectById, {
+        $id: id,
+      });
       if (!comment) throw new NotFoundException(id);
       return comment;
     } catch (err) {
@@ -71,11 +67,9 @@ export class CommentsService {
     tm.userId = data.userId;
     tm.creationDate = new Date();
 
-    console.log(this.helperService.objTo$obj(tm));
-
     try {
       let flag = await this.sqliteService.run(
-        `INSERT INTO Comment (id, text, creationDate, postId, userId) VALUES($id, $text, $creationDate, $postId, $userId)`,
+        insert,
         this.helperService.objTo$obj(tm),
       );
       if (flag) return tm;
