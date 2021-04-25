@@ -21,7 +21,7 @@ export class UsersService {
       let user = <User>await this.sqliteService.get(selectById, {
         $id: id,
       });
-      if (!user) throw new NotFoundException(id);
+      //if (!user) throw new NotFoundException(id);
       return user;
     } catch (err) {
       throw new Error(err);
