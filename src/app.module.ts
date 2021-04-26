@@ -7,12 +7,18 @@ import { CommentsModules } from './comments/comments.module';
 import { MorganMiddleware } from './common/middlewares/morgan-middleware';
 import { PostsModule } from './posts/posts.module';
 import { UsersModule } from './users/users.module';
+import { ConfigModule } from '@nestjs/config';
+import AppConfig from './config/app.config';
 
 @Module({
   imports: [
     UsersModule,
     PostsModule,
     CommentsModules,
+    ConfigModule.forRoot({
+      load: [AppConfig],
+      isGlobal: true,
+    }),
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,

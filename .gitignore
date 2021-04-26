@@ -35,3 +35,6 @@ lerna-debug.log*
 
 #DB file
 *tiny-blog.db
+
+#env files
+.env

@@ -1,12 +1,12 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
 import * as morgan from 'morgan';
 
 @Injectable()
 export class MorganMiddleware implements NestMiddleware {
+  constructor(private readonly configService: ConfigService) {}
   use(req: Request, res: Response, next: NextFunction) {
-    morgan(
-      ':remote-addr :remote-user :method :url HTTP/:http-version :status :res[content-length] - :response-time ms',
-    )(req, res, next);
+    morgan(this.configService.get('log').access_log)(req, res, next);
   }
 }
