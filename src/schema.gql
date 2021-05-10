@@ -58,6 +58,10 @@ type Query {
   users: [User!]
 }
 
+type Subscription {
+  commentAdded(postId: String!): Comment!
+}
+
 type User {
   creationDate: DateTime
   email: String!

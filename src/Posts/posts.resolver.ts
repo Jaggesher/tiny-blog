@@ -50,7 +50,7 @@ export class PostsResolver {
     @Args('newPostData') newPostData: NewPostInput,
   ): Promise<Post> {
     let post = await this.postsService.create(newPostData);
-    if (!post) throw new NotFoundException('User Not FOund');
+    if (!post) throw new NotFoundException('User Not Found');
     return post;
   }
 

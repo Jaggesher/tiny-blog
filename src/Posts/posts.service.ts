@@ -3,14 +3,17 @@ import { NewPostInput } from './dtos/new-post.input';
 import { Post } from './models/post.model';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersService } from 'src/users/users.service';
+import { SqliteService } from 'src/database/sqlite/sqlite.service';
+import { HelperService } from 'src/helper/helper.service';
+import { insert, select, selectById } from './posts.query';
 
 @Injectable()
 export class PostsService {
-  private myPosts: Post[];
-
-  constructor(private readonly usersService: UsersService) {
-    this.myPosts = [];
-  }
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly sqliteService: SqliteService,
+    private readonly helperService: HelperService,
+  ) {}
 
   /**
    * Get single post by ID
@@ -18,7 +21,15 @@ export class PostsService {
    * @returns
    */
   async findOneById(id: string): Promise<Post> {
-    return this.myPosts.find((x) => x.id === id);
+    try {
+      let post = <Post>await this.sqliteService.get(selectById, {
+        $id: id,
+      });
+      if (!post) throw new NotFoundException(id);
+      return post;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**
@@ -26,7 +37,12 @@ export class PostsService {
    * @returns
    */
   async getAll(): Promise<Post[]> {
-    return this.myPosts;
+    try {
+      let tm = <Post[]>await this.sqliteService.all(select);
+      return tm;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**s
@@ -44,8 +60,16 @@ export class PostsService {
     post.userId = data.userId;
     post.creationDate = new Date();
 
-    this.myPosts.push(post);
-    return post;
+    try {
+      let flag = await this.sqliteService.run(
+        insert,
+        this.helperService.objTo$obj(post),
+      );
+      if (flag) return post;
+      throw new Error('Something went wrong!');
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 
   /**
@@ -54,7 +78,13 @@ export class PostsService {
    * @returns true of false
    */
   async CheckPostById(id: string) {
-    let tm = this.myPosts.find((x) => x.id === id);
-    return tm ? true : false;
+    try {
+      let tm = <Post>await this.sqliteService.get(selectById, {
+        $id: id,
+      });
+      return tm ? true : false;
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 }
